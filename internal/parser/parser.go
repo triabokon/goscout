@@ -19,7 +19,7 @@ func New(c *http.Client) *Parser {
 }
 
 func (p *Parser) ExtractURLs(u string) (outgoingURLs, staticURLs []string, err error) {
-	tokenizer, err := p.fetchWebPage(u)
+	tokenizer, err := p.getPageTokenizer(u)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch web page: %w", err)
 	}
@@ -31,18 +31,17 @@ func (p *Parser) ExtractURLs(u string) (outgoingURLs, staticURLs []string, err e
 }
 
 // Fetch and return the body of the webpage.
-func (p *Parser) fetchWebPage(urlStr string) (*html.Tokenizer, error) {
+func (p *Parser) getPageTokenizer(urlStr string) (*html.Tokenizer, error) {
 	resp, err := p.client.Get(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get web page: %w", err)
 	}
-	var b bytes.Buffer
-	if wErr := resp.Write(&b); wErr != nil {
+	var body bytes.Buffer
+	if wErr := resp.Write(&body); wErr != nil {
 		return nil, fmt.Errorf("failed to write response to buffer: %w", wErr)
 	}
 	defer resp.Body.Close()
-	tokenizer := html.NewTokenizer(&b)
-	return tokenizer, nil
+	return html.NewTokenizer(&body), nil
 }
 
 // parseWebPage is now simplified, delegating the handling of different token types to the new functions.

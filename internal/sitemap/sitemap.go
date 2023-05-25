@@ -4,33 +4,43 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
+	"strings"
 )
 
 // todo: introduce xml ns https://www.sitemaps.org/schemas/sitemap/0.9/
 
+const indentSymbol = " "
+
+type SiteMap struct {
+	config Config
+	index  *Index
+}
+
 type Index struct {
 	XMLName xml.Name `xml:"urlset"`
 	XMLNS   string   `xml:"xmlns,attr"`
-	Sitemap *Sitemap `xml:"url"`
+	URL     *URL     `xml:"url"`
 }
 
-type Sitemap struct {
-	Loc     string     `xml:"loc"`
-	Sitemap []*Sitemap `xml:"url"`
+type URL struct {
+	Loc  string `xml:"loc"`
+	URLs []*URL `xml:"url"`
 }
 
-func New(xmlName, xmlNS string) Index {
-	return Index{
-		XMLName: xml.Name{Local: xmlName},
-		XMLNS:   xmlNS,
+func New(config Config) *SiteMap {
+	return &SiteMap{
+		config: config,
+		index: &Index{
+			XMLNS: config.XMLNS,
+		},
 	}
 }
 
-func (s *Index) GenerateSitemap(data map[string][]string, rootValue string) {
-	s.Sitemap = generateSitemap(data, rootValue)
+func (s *SiteMap) GenerateSitemap(data map[string][]string, rootValue string) {
+	s.index.URL = generateSitemap(data, rootValue)
 }
 
-func (s *Index) WriteToFile(filename string) error {
+func (s *SiteMap) WriteToFile(filename string) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
@@ -38,7 +48,7 @@ func (s *Index) WriteToFile(filename string) error {
 	if _, err = file.WriteString(xml.Header); err != nil {
 		return fmt.Errorf("failed to write xml header to file: %w", err)
 	}
-	xmlSitemap, err := xml.MarshalIndent(s, "", " ")
+	xmlSitemap, err := xml.MarshalIndent(s.index, "", strings.Repeat(indentSymbol, s.config.Indent))
 	if err != nil {
 		return fmt.Errorf("failed to marshal sitemap: %w", err)
 	}
@@ -53,12 +63,12 @@ func (s *Index) WriteToFile(filename string) error {
 
 type stackItem struct {
 	value string
-	node  *Sitemap
+	node  *URL
 }
 
-func generateSitemap(data map[string][]string, rootValue string) *Sitemap {
+func generateSitemap(data map[string][]string, rootValue string) *URL {
 	visited := make(map[string]bool, len(data))
-	rootNode := &Sitemap{Loc: rootValue}
+	rootNode := &URL{Loc: rootValue}
 	stack := []*stackItem{
 		{
 			value: rootValue,
@@ -78,8 +88,8 @@ func generateSitemap(data map[string][]string, rootValue string) *Sitemap {
 		// Push children to the stack
 		if children, ok := data[item.value]; ok {
 			for _, childValue := range children {
-				child := &Sitemap{Loc: childValue}
-				item.node.Sitemap = append(item.node.Sitemap, child)
+				child := &URL{Loc: childValue}
+				item.node.URLs = append(item.node.URLs, child)
 				stack = append(stack, &stackItem{
 					value: childValue,
 					node:  child,

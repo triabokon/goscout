@@ -27,45 +27,46 @@ func Cmd() *cobra.Command {
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) (err error) {
 		ctx := context.Background()
-		startURL := "https://monzo.com/"
-		client := &http.Client{ // todo: config
-			Timeout: time.Second * 30, // Increase the timeout to give slow servers a chance to respond
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				if len(via) >= 10 {
-					return http.ErrUseLastResponse // stop after 10 redirects
-				}
-				return nil
-			},
-		}
-
-		queue := make(chan string, 100)
+		client := &http.Client{Timeout: config.HTTPTimeout}
 		g, gctx := errgroup.WithContext(ctx)
-		c := crawler.New(parser.New(client), g, queue)
+		c := crawler.New(config.Crawler, parser.New(client))
 
-		c.Start(gctx)
-		if err = c.Crawl(gctx, startURL); err != nil {
+		fmt.Printf("Start crawler with %d workers\n", config.Crawler.WorkerCount)
+		c.Start(gctx, g)
+
+		fmt.Printf("Crawling website %s\n", config.SiteURL)
+		started := time.Now()
+		if err = c.Crawl(gctx, config.SiteURL, g); err != nil {
 			return fmt.Errorf("failed to crawl web page: %w", err)
 		}
-
-		running := true
-		for running {
-			<-time.Tick(1 * time.Second) // todo: config
-			if len(queue)+c.ActiveWorkersCount() == 0 {
-				fmt.Println("There are no active workers, nor any pending tasks.")
-				close(queue)
-				running = false
+		crawling := true
+		var elapsedTime time.Duration
+		for crawling {
+			<-time.Tick(config.CheckInterval)
+			fmt.Print(".")
+			if !c.HasWorkToDo() {
+				c.Stop()
+				crawling = false
+				elapsedTime = time.Since(started)
+				fmt.Print("\n")
 			}
 		}
-
-		if gErr := c.Wait(); gErr != nil {
+		if gErr := g.Wait(); gErr != nil {
 			return gErr
 		}
 
-		s := sitemap.New("sitemap", "https://www.sitemaps.org/schemas/sitemap/0.9/")
-		s.GenerateSitemap(c.SeenURLs(), startURL)
-		if wErr := s.WriteToFile("sitemap.xml"); wErr != nil { // todo: config
+		seenURLs := c.SeenURLs()
+		fmt.Printf("Crawler foung %d urls in %s time\n", len(seenURLs), elapsedTime)
+
+		fmt.Println("Generating sitemap ...")
+		s := sitemap.New(config.Sitemap)
+		s.GenerateSitemap(seenURLs, config.SiteURL)
+
+		fmt.Printf("Writing sitemap to %s ...\n", config.FileName)
+		if wErr := s.WriteToFile(config.FileName); wErr != nil {
 			return fmt.Errorf("failed to write sitemap: %w", err)
 		}
+		fmt.Println("Sitemap successfully written!")
 		return nil
 	}
 	return cmd
@@ -73,6 +74,7 @@ func Cmd() *cobra.Command {
 
 func Execute() {
 	if err := Cmd().Execute(); err != nil {
+		fmt.Println(fmt.Errorf("encountered error: %w", err))
 		os.Exit(1)
 	}
 }
