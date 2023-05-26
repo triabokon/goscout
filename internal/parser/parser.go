@@ -18,7 +18,8 @@ func New(c *http.Client) *Parser {
 	return &Parser{client: c}
 }
 
-func (p *Parser) ExtractURLs(u string) (outgoingURLs, staticURLs []string, err error) {
+// ExtractURLs fetches web page by url and extracts all links from it.
+func (p *Parser) ExtractURLs(u string) (webURLs, staticURLs []string, err error) {
 	tokenizer, err := p.getPageTokenizer(u)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch web page: %w", err)
@@ -30,7 +31,7 @@ func (p *Parser) ExtractURLs(u string) (outgoingURLs, staticURLs []string, err e
 	return p.parseWebPage(tokenizer, baseURL)
 }
 
-// Fetch and return the body of the webpage.
+// getPageTokenizer fetch the web page and get tokenizer to parse it.
 func (p *Parser) getPageTokenizer(urlStr string) (*html.Tokenizer, error) {
 	resp, err := p.client.Get(urlStr)
 	if err != nil {
@@ -44,22 +45,25 @@ func (p *Parser) getPageTokenizer(urlStr string) (*html.Tokenizer, error) {
 	return html.NewTokenizer(&body), nil
 }
 
-// parseWebPage is now simplified, delegating the handling of different token types to the new functions.
-func (p *Parser) parseWebPage(tokenizer *html.Tokenizer, baseURL *url.URL) (nu, su []string, err error) {
+// parseWebPage tokenizes the web page, collect and sorts the urls into web urls and static urls.
+func (p *Parser) parseWebPage(tokenizer *html.Tokenizer, baseURL *url.URL) (wu, su []string, err error) {
 	for {
 		tt := tokenizer.Next()
 		switch {
+		// if the token type is an ErrorToken, we've reached the end of the document
 		case tt == html.ErrorToken:
-			return nu, su, nil
+			return wu, su, nil
 		case tt == html.StartTagToken, tt == html.SelfClosingTagToken:
 			token := tokenizer.Token()
 			switch HTMLElementType(token.DataAtom.String()) {
+			// if element is a link or base element, add its urls to the web urls
 			case HTMLElementTypeA, HTMLElementTypeLink, HTMLElementTypeBase:
 				urls, tErr := p.handleToken(token, baseURL, HTMLAttributeTypeHref)
 				if tErr != nil {
 					return nil, nil, fmt.Errorf("failed to handle token: %w", tErr)
 				}
-				nu = append(nu, urls...)
+				wu = append(wu, urls...)
+			// if element is an image, script, source, embed, or iframe, add its urls to the static urls
 			case HTMLElementTypeImg, HTMLElementTypeImage, HTMLElementTypeScript,
 				HTMLElementTypeSource, HTMLElementTypeEmbed, HTMLElementTypeIFrame:
 				urls, tErr := p.handleToken(token, baseURL, HTMLAttributeTypeSrc)
@@ -72,7 +76,7 @@ func (p *Parser) parseWebPage(tokenizer *html.Tokenizer, baseURL *url.URL) (nu, 
 	}
 }
 
-// handleToken handles tokens attributes.
+// handleToken processes html token and extracts urls by the specified attribute type.
 func (p *Parser) handleToken(token html.Token, baseURL *url.URL, attrType HTMLAttributeType) ([]string, error) {
 	urls := make([]string, 0, len(token.Attr))
 	for _, attr := range token.Attr {
@@ -82,6 +86,7 @@ func (p *Parser) handleToken(token html.Token, baseURL *url.URL, attrType HTMLAt
 			case nil:
 				urls = append(urls, u)
 			case ErrURLHasInvalidSchema, ErrURLHasDifferentHost:
+				// if url has invalid schema or different host, ignore it
 			default:
 				return nil, fmt.Errorf("failed to resolve url: %w", err)
 			}
@@ -90,14 +95,14 @@ func (p *Parser) handleToken(token html.Token, baseURL *url.URL, attrType HTMLAt
 	return urls, nil
 }
 
-// resolveURL resolves the url with respect to the base URL.
+// resolveURL parse url string, resolve it relative to a baseURL, and validate it.
 func (p *Parser) resolveURL(u string, baseURL *url.URL) (string, error) {
-	parsedURL, err := url.Parse(strings.Trim(u, " "))
+	parsedURL, err := url.Parse(strings.TrimSpace(u))
 	if err != nil {
 		return "", fmt.Errorf("failed to parse url: %w", err)
 	}
 	parsedURL = baseURL.ResolveReference(parsedURL)
-	if parsedURL.Scheme != "https" {
+	if parsedURL.Scheme != HTTPSSchema {
 		return "", ErrURLHasInvalidSchema
 	}
 	if parsedURL.Hostname() != baseURL.Hostname() {

@@ -28,52 +28,49 @@ func New(c Config, p *parser.Parser) *Crawler {
 	}
 }
 
+// Crawl crawls url, extracting and filtering its urls, then add found urls to the queue.
 func (c *Crawler) Crawl(ctx context.Context, url string, g *errgroup.Group) error {
+	// check if url has already been visited
 	if _, ok := c.seenURLs.Load(url); ok {
 		return nil
 	}
+	// store url to the map of visited urls, so other workers would not process it
 	c.seenURLs.Store(url, nil)
-	navigationURLs, staticURLs, err := c.parser.ExtractURLs(url)
+	// extract all urls from the given web page
+	webURLs, staticURLs, err := c.parser.ExtractURLs(url)
 	if err != nil {
-		return fmt.Errorf("failed to extract link from web page: %w", err)
+		return fmt.Errorf("failed to extract u from web page: %w", err)
 	}
-	filteredStaticLinks, err := filterStaticLinks(staticURLs)
-	if err != nil {
-		return fmt.Errorf("failed to filter static links: %w", err)
-	}
-	c.seenURLs.Store(url, append(c.filterNavigationURLs(navigationURLs), filteredStaticLinks...))
 
-	for _, link := range navigationURLs {
-		if _, ok := c.seenURLs.Load(link); ok {
-			continue
-		}
-		// Check for context cancellation
+	filteredWebURLs, err := filterWebURLs(webURLs, c.seenURLs)
+	if err != nil {
+		return fmt.Errorf("failed to filter web urls: %w", err)
+	}
+	filteredStaticURLs, err := filterStaticURLs(staticURLs)
+	if err != nil {
+		return fmt.Errorf("failed to filter static urls: %w", err)
+	}
+	// update value in the seenURLs with newly found urls
+	c.seenURLs.Store(url, append(filteredWebURLs, filteredStaticURLs...))
+
+	for _, u := range filteredWebURLs {
 		select {
+		// check for context cancellation
 		case <-ctx.Done():
 			return ctx.Err()
+		// send this url to the queue
+		case c.queue <- u:
 		default:
-			// Continue if not cancelled
-		}
-		textLink, mErr := isTextLink(link)
-		if mErr != nil {
-			return fmt.Errorf("failed to check mime type: %w", mErr)
-		}
-		if textLink {
-			// send this job to the worker pool
-			select {
-			case c.queue <- link:
-			default:
-				// Send to jobs was not ready, do the job
-				// in the current worker.
-				if cErr := c.Crawl(ctx, link, g); cErr != nil {
-					return fmt.Errorf("failed to crawl web page: %w", cErr)
-				}
+			// if the queue is full, then crawl this url immediately
+			if cErr := c.Crawl(ctx, u, g); cErr != nil {
+				return fmt.Errorf("failed to crawl web page: %w", cErr)
 			}
 		}
 	}
 	return nil
 }
 
+// Start initializes multiple workers based on the WorkerCount from the Config.
 func (c *Crawler) Start(ctx context.Context, g *errgroup.Group) {
 	for w := 0; w < c.config.WorkerCount; w++ {
 		g.Go(func() error {
@@ -86,9 +83,11 @@ func (c *Crawler) Start(ctx context.Context, g *errgroup.Group) {
 }
 
 func (c *Crawler) SeenURLs() map[string][]string {
-	return syncMapToMap(c.seenURLs)
+	return seenURLsToMap(c.seenURLs)
 }
 
+// HasWorkToDo determines if there are any active workers or pending urls in the queue.
+// We could close the queue and stop Crawler if not.
 func (c *Crawler) HasWorkToDo() bool {
 	return int(c.activeWorkers)+len(c.queue) > 0
 }
@@ -97,23 +96,16 @@ func (c *Crawler) Stop() {
 	close(c.queue)
 }
 
+// worker is process urls from the queue by calling the Crawl method.
 func (c *Crawler) worker(ctx context.Context, g *errgroup.Group) error {
 	for l := range c.queue {
+		// increment the count of active workers
 		atomic.AddInt64(&c.activeWorkers, 1)
 		if err := c.Crawl(ctx, l, g); err != nil {
 			return fmt.Errorf("failed to crawl web page: %w", err)
 		}
+		// once the url has been crawled, decrement the count of active workers
 		atomic.AddInt64(&c.activeWorkers, -1)
 	}
 	return nil
-}
-
-func (c *Crawler) filterNavigationURLs(urls []string) []string {
-	filtered := make([]string, 0, len(urls))
-	for _, l := range unique(urls) {
-		if _, ok := c.seenURLs.Load(l); !ok {
-			filtered = append(filtered, l)
-		}
-	}
-	return filtered
 }

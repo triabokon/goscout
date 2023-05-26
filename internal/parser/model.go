@@ -7,6 +7,8 @@ var (
 	ErrURLHasInvalidSchema = fmt.Errorf("url has invalid schema")
 )
 
+const HTTPSSchema = "https"
+
 type HTMLElementType string
 
 const (
