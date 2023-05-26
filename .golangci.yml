@@ -61,3 +61,10 @@ linters:
     - lll # Reports long lines.
     - gochecknoglobals # Checks that no global variables exist.
     - gochecknoinits # Checks that no init functions are present in Go code.
+
+issues:
+  exclude-rules:
+    - linters:
+        - lll
+      # can't break go:generate into multiple lines
+      source: "^//go:generate "

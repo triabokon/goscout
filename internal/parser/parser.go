@@ -10,11 +10,16 @@ import (
 	"golang.org/x/net/html"
 )
 
-type Parser struct {
-	client *http.Client
+//go:generate mockgen -destination=./mocks/http_mock.go -package=mocks github.com/triabokon/goscout/internal/parser HTTPClient
+type HTTPClient interface {
+	Get(url string) (resp *http.Response, err error)
 }
 
-func New(c *http.Client) *Parser {
+type Parser struct {
+	client HTTPClient
+}
+
+func New(c HTTPClient) *Parser {
 	return &Parser{client: c}
 }
 

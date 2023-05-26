@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"goscout/internal/crawler"
-	"goscout/internal/sitemap"
+	"github.com/triabokon/goscout/internal/crawler"
+	"github.com/triabokon/goscout/internal/sitemap"
 )
 
 type Config struct {

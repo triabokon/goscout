@@ -1,8 +1,11 @@
-module goscout/tools
+module github.com/triabokon/goscout/tools
 
 go 1.20
 
-require github.com/golangci/golangci-lint v1.51.2
+require (
+	github.com/golang/mock v1.6.0
+	github.com/golangci/golangci-lint v1.51.2
+)
 
 require (
 	4d63.com/gocheckcompilerdirectives v1.2.1 // indirect

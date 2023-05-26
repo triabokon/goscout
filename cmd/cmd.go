@@ -9,9 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"goscout/internal/crawler"
-	"goscout/internal/parser"
-	"goscout/internal/sitemap"
+	"github.com/triabokon/goscout/internal/crawler"
+	"github.com/triabokon/goscout/internal/parser"
+	"github.com/triabokon/goscout/internal/sitemap"
 )
 
 func Cmd() *cobra.Command {

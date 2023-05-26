@@ -38,6 +38,10 @@ func (s *SiteMap) GenerateSitemap(data map[string][]string, rootValue string) {
 	s.index.URL = generateSitemap(data, rootValue)
 }
 
+func (s *SiteMap) Index() *Index {
+	return s.index
+}
+
 // WriteToFile writes the xml site map to a file with filename.
 func (s *SiteMap) WriteToFile(filename string) error {
 	file, err := os.Create(filename)

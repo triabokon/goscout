@@ -1,6 +1,6 @@
 package main
 
-import "goscout/cmd"
+import "github.com/triabokon/goscout/cmd"
 
 func main() {
 	cmd.Execute()

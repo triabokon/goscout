@@ -3,7 +3,7 @@ package sitemap
 import (
 	"github.com/spf13/pflag"
 
-	"goscout/flags"
+	"github.com/triabokon/goscout/flags"
 )
 
 type Config struct {

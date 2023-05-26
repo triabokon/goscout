@@ -21,8 +21,8 @@ const (
 
 // unique removes duplicates.
 func unique(s []string) []string {
-	keys := make(map[string]bool)
-	var list []string
+	keys := make(map[string]bool, len(s))
+	list := make([]string, 0, len(s))
 	for _, entry := range s {
 		if _, value := keys[entry]; !value {
 			keys[entry] = true

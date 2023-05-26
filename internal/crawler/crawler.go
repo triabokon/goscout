@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
-
-	"goscout/internal/parser"
 )
+
+//go:generate mockgen -destination=./mocks/parser_mock.go -package=mocks github.com/triabokon/goscout/internal/crawler Parser
+type Parser interface {
+	ExtractURLs(u string) (webURLs, staticURLs []string, err error)
+}
 
 type Crawler struct {
 	config Config
-	parser *parser.Parser
+	parser Parser
 
 	wg            *sync.WaitGroup
 	seenURLs      *sync.Map
@@ -26,7 +29,7 @@ type Job struct {
 	Depth int
 }
 
-func New(c Config, p *parser.Parser) *Crawler {
+func New(c Config, p Parser) *Crawler {
 	return &Crawler{
 		config:   c,
 		parser:   p,
