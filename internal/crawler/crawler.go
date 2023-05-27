@@ -40,13 +40,13 @@ func New(c Config, p Parser) *Crawler {
 	}
 }
 
-// Crawl crawls url, extracting and filtering its urls, then add found urls to the queue.
+// Crawl crawls web page, extracting and filtering its urls, then add found urls to the queue.
 func (c *Crawler) Crawl(ctx context.Context, url string, depth int) error {
 	// check if url has already been visited
 	if _, ok := c.seenURLs.Load(url); ok {
 		return nil
 	}
-	// store url to the map of visited urls, so other workers would not process it
+	// store url to the map of visited urls, so other workers would not process it again
 	c.seenURLs.Store(url, nil)
 	if depth > c.config.Depth {
 		return ErrExceedsDepth

@@ -57,7 +57,7 @@ func registerExtensionTypes() error {
 	return nil
 }
 
-// isTextURL checks is url has extension and if so, whether it's mime type is text.
+// isTextURL checks if url has extension and whether it's mime type is text.
 func isTextURL(u string) (bool, error) {
 	extension, err := getExtension(u)
 	if err != nil {

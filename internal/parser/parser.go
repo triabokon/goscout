@@ -23,7 +23,7 @@ func New(c HTTPClient) *Parser {
 	return &Parser{client: c}
 }
 
-// ExtractURLs fetches web page by url and extracts all links from it.
+// ExtractURLs fetches web page by url and extracts all urls from it.
 func (p *Parser) ExtractURLs(u string) (webURLs, staticURLs []string, err error) {
 	tokenizer, err := p.getPageTokenizer(u)
 	if err != nil {
