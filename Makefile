@@ -36,8 +36,8 @@ clean:
 	@rm -rf $(GOBIN)
 
 download-deps:
-	@go download
-	@go download -modfile=tools/go.mod
+	@go mod download
+	@go mod download -modfile=tools/go.mod
 
 tidy:
 	@go mod tidy
