@@ -31,8 +31,8 @@ func Cmd() *cobra.Command {
 		c := crawler.New(config.Crawler, parser.New(client))
 
 		fmt.Printf(
-			"Start crawler with %d workers and depth %d\n",
-			config.Crawler.WorkerCount, config.Crawler.Depth,
+			"Start crawler with %d workers, queue size %d and crawling depth %d\n",
+			config.Crawler.WorkerCount, config.Crawler.QueueSize, config.Crawler.Depth,
 		)
 		c.Start(ctx)
 
