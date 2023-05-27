@@ -41,7 +41,7 @@ func Cmd() *cobra.Command {
 
 		fmt.Printf("Crawling website %s\n", config.SiteURL)
 		started := time.Now()
-		if err = c.Crawl(ctx, config.SiteURL, 0); err != nil {
+		if err = c.Crawl(ctx, config.SiteURL, 1); err != nil {
 			return fmt.Errorf("failed to crawl web page: %w", err)
 		}
 		crawling := true
@@ -68,7 +68,7 @@ func Cmd() *cobra.Command {
 		}
 
 		seenURLs := c.SeenURLs()
-		fmt.Printf("Crawler found %d urls in %s time\n", len(seenURLs), elapsedTime)
+		fmt.Printf("Crawler visited %d pages in %s time\n", len(seenURLs), elapsedTime)
 
 		fmt.Println("Generating sitemap ...")
 		s := sitemap.New(config.Sitemap)

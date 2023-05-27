@@ -95,11 +95,11 @@ Launch goscout:
 ```
 
 Goscout console output:
-```bash
+```
 Start crawler with 100 workers
 Crawling website https://www.sitemaps.org/
 ..
-Crawler found 48 urls in 2.510818214s time
+Crawler visited 48 pages in 2.510818214s time
 Generating sitemap ...
 Writing sitemap to sitemap.xml ...
 Sitemap successfully written!
