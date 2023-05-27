@@ -26,6 +26,9 @@ func Cmd() *cobra.Command {
 	cmd.Flags().AddFlagSet(config.Flags())
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) (err error) {
+		if config.SiteURL == "" {
+			return fmt.Errorf("site url is required")
+		}
 		ctx := context.Background()
 		client := &http.Client{Timeout: config.HTTPTimeout}
 		c := crawler.New(config.Crawler, parser.New(client))
@@ -83,7 +86,6 @@ func Cmd() *cobra.Command {
 
 func Execute() {
 	if err := Cmd().Execute(); err != nil {
-		fmt.Println(fmt.Errorf("encountered error: %w", err))
 		os.Exit(1)
 	}
 }

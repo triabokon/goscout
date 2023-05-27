@@ -56,7 +56,7 @@ This will build the binary and store it in the `./bin` directory.
 After building the project, you can run the binary:
 
 ```bash
-./bin/goscout
+./bin/goscout --site_url https://monzo.com/
 ```
 
 Goscout has a CLI and there is `help` command output.

@@ -22,7 +22,7 @@ type Config struct {
 func (c *Config) Flags() *pflag.FlagSet {
 	f := pflag.NewFlagSet("GoScoutConfig", pflag.PanicOnError)
 
-	f.StringVar(&c.SiteURL, "site_url", "https://monzo.com/", "url of the site to crawl")
+	f.StringVar(&c.SiteURL, "site_url", "", "url of the site to crawl")
 	f.StringVar(&c.FileName, "file_name", "sitemap.xml", "filename to write sitemap")
 	f.DurationVar(
 		&c.CheckInterval, "check_interval",
