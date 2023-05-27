@@ -120,12 +120,10 @@ func seenURLsToMap(seenURLs *sync.Map) map[string][]string {
 }
 
 func TotalUniqueURLsCount(seenURLs map[string][]string) int {
-	var au []string
+	au := make([]string, 0, len(seenURLs))
 	for k, v := range seenURLs {
 		au = append(au, k)
-		for _, i := range v {
-			au = append(au, i)
-		}
+		au = append(au, v...)
 	}
 	uu := unique(au)
 	return len(uu)
