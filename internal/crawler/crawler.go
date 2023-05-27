@@ -83,7 +83,7 @@ func (c *Crawler) Crawl(ctx context.Context, url string, depth int) error {
 			case ErrExceedsDepth:
 				return nil
 			default:
-				return fmt.Errorf("failed to crawl web page: %w", cErr)
+				return cErr
 			}
 		}
 	}
@@ -143,7 +143,7 @@ func (c *Crawler) worker(ctx context.Context) {
 		case nil, ErrExceedsDepth:
 			continue
 		default:
-			c.errc <- err
+			c.errc <- fmt.Errorf("failed to crawl web page: %w", err)
 		}
 	}
 }
