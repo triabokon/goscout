@@ -62,7 +62,7 @@ After building the project, you can run the binary:
 Goscout has a CLI and there is `help` command output.
 
 ```bash
-./bin/goscout goscout --help
+./bin/goscout --help
 ```
 
 ```
@@ -91,7 +91,7 @@ Flags:
 
 Launch goscout:
 ```bash
-./bin/goscout goscout --site_url https://www.sitemaps.org/
+./bin/goscout --site_url https://www.sitemaps.org/
 ```
 
 Goscout console output:

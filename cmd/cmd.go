@@ -30,7 +30,10 @@ func Cmd() *cobra.Command {
 		client := &http.Client{Timeout: config.HTTPTimeout}
 		c := crawler.New(config.Crawler, parser.New(client))
 
-		fmt.Printf("Start crawler with %d workers\n", config.Crawler.WorkerCount)
+		fmt.Printf(
+			"Start crawler with %d workers and depth %d\n",
+			config.Crawler.WorkerCount, config.Crawler.Depth,
+		)
 		c.Start(ctx)
 
 		fmt.Printf("Crawling website %s\n", config.SiteURL)
