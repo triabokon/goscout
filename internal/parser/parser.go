@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -102,7 +103,13 @@ func (p *Parser) handleToken(token html.Token, baseURL *url.URL, attrType HTMLAt
 
 // resolveURL parse url string, resolve it relative to a baseURL, and validate it.
 func (p *Parser) resolveURL(u string, baseURL *url.URL) (string, error) {
-	parsedURL, err := url.Parse(strings.TrimSpace(u))
+	u = strings.Trim(strings.TrimSpace(u), "\\\"")
+	unquotedURL, err := strconv.Unquote(u)
+	if err != nil {
+		// if unquoting fails, assume the string is not quoted
+		unquotedURL = u
+	}
+	parsedURL, err := url.Parse(unquotedURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse url: %w", err)
 	}
