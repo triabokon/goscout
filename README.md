@@ -96,10 +96,10 @@ Launch goscout:
 
 Goscout console output:
 ```
-Start crawler with 100 workers
+Start crawler with 100 workers, queue size 100 and crawling depth 100
 Crawling website https://www.sitemaps.org/
 ..
-Crawler visited 48 pages in 2.510818214s time
+Crawler visited 47 pages, collected 48 unique urls in 3.481728502s time
 Generating sitemap ...
 Writing sitemap to sitemap.xml ...
 Sitemap successfully written!
@@ -110,25 +110,23 @@ Content of the generated `sitemap.xml` file:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9/">
- <url>
-  <loc>https://www.sitemaps.org/</loc>
-  <url>
-   <loc>https://www.sitemaps.org/sitemaps.css</loc>
-  </url>
-  <url>
-   <loc>https://www.sitemaps.org/faq.php</loc>
-   <url>
-    <loc>https://www.sitemaps.org/faq.php#faq_xml_encoding</loc>
     <url>
-     <loc>https://www.sitemaps.org/lang.js</loc>
+        <loc>https://www.sitemaps.org/</loc>
+        <url>
+            <loc>https://www.sitemaps.org/faq.php</loc>
+            <url>
+                <loc>https://www.sitemaps.org/index.php</loc>
+                <url>
+                    <loc>https://www.sitemaps.org/lang.js</loc>
+                </url>
+            </url>
+            ...
+        </url>
+        ...
+        <url>
+            <loc>https://www.sitemaps.org/lang.js</loc>
+        </url>
     </url>
-   </url>
-  </url>
-   ...
-  <url>
-   <loc>https://www.sitemaps.org/lang.js</loc>
-  </url>
- </url>
 </urlset>
 ```
 
@@ -181,7 +179,7 @@ so goscout could potentially collect more URLs and become more fault-tolerant.
 3. Profiling and benchmarking could be used to test and potentially find some memory or concurrency-related issues.
 4. Test coverage could be improved
 ```bash
-github.com/triabokon/goscout/internal/crawler   coverage: 65.0% of statements
+github.com/triabokon/goscout/internal/crawler   coverage: 60.9% of statements
 github.com/triabokon/goscout/internal/parser    coverage: 85.1% of statements
 github.com/triabokon/goscout/internal/sitemap   coverage: 48.6% of statements
 ```

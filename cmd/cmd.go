@@ -68,7 +68,10 @@ func Cmd() *cobra.Command {
 		}
 
 		seenURLs := c.SeenURLs()
-		fmt.Printf("Crawler visited %d pages in %s time\n", len(seenURLs), elapsedTime)
+		fmt.Printf(
+			"Crawler visited %d pages, collected %d unique urls in %s time\n",
+			len(seenURLs), crawler.TotalUniqueURLsCount(seenURLs), elapsedTime,
+		)
 
 		fmt.Println("Generating sitemap ...")
 		s := sitemap.New(config.Sitemap)
