@@ -77,12 +77,12 @@ Aliases:
 Flags:
       --check_interval duration    time interval to check if there are any pages left to crawl (default 1s)
       --crawler_depth int          maximum depth the crawler would go (default 100)
-      --crawler_queue_size int     maximum number of tasks that queue can store (default 100)
-      --crawler_worker_count int   number of workers for crawler (default 100)
+      --crawler_queue_size int     maximum number of tasks that queue can store (min 10) (default 100)
+      --crawler_worker_count int   number of workers for crawler (min 10) (default 100)
       --file_name string           filename to write sitemap (default "sitemap.xml")
   -h, --help                       help for goscout
       --http_timeout duration      timeout for http requests (default 10s)
-      --site_url string            url of the site to crawl (default "https://monzo.com/")
+      --site_url string            url of the site to crawl
       --sitemap_indent int         xml sitemap indent (default 1)
       --sitemap_xml_ns string      xml sitemap namespace (default "https://www.sitemaps.org/schemas/sitemap/0.9/")
 ```

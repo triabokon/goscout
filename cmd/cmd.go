@@ -29,6 +29,12 @@ func Cmd() *cobra.Command {
 		if config.SiteURL == "" {
 			return fmt.Errorf("site url is required")
 		}
+		if config.Crawler.WorkerCount < crawler.MinWorkerCount {
+			return fmt.Errorf("worker count should be greater than 10")
+		}
+		if config.Crawler.QueueSize < crawler.MinQueueSize {
+			return fmt.Errorf("queue size should be greater than 10")
+		}
 		ctx := context.Background()
 		client := &http.Client{Timeout: config.HTTPTimeout}
 		c := crawler.New(config.Crawler, parser.New(client))
