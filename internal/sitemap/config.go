@@ -17,7 +17,7 @@ func (c *Config) Flags(prefix string) *pflag.FlagSet {
 
 	f.StringVar(
 		&c.XMLNS, "xml_ns",
-		"https://www.sitemaps.org/schemas/sitemap/0.9/", "xml sitemap namespace name",
+		"https://www.sitemaps.org/schemas/sitemap/0.9/", "xml sitemap namespace",
 	)
 	f.IntVar(&c.Indent, "indent", 1, "xml sitemap indent")
 
