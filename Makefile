@@ -31,28 +31,35 @@ help:
 	@echo ''
 
 clean:
+	@echo "[cleaning]"
 	@go clean
 	@if [ -f $(BINARY_PATH) ] ; then rm $(BINARY_PATH) ; fi
 	@rm -rf $(GOBIN)
 
 download-deps:
+	@echo "[download dependencies]"
 	@go mod download
 	@go mod download -modfile=tools/go.mod
 
 tidy:
+	@echo "[tidying]"
 	@go mod tidy
 
 generate:
+	@echo "[generate]"
 	@go install -modfile=tools/go.mod github.com/golang/mock/mockgen
 	@find . -not -path '*/\.*' -name \*_mock.go -delete
 	@go generate $(PKGS)
 
 lint:
+	@echo "[lint]"
 	@go install -modfile=tools/go.mod github.com/golangci/golangci-lint/cmd/golangci-lint
 	@$(LINTER) run
 
 test:
+	@echo "[test]"
 	@go test -race -v -count=1 ./...
 
 build:
+	@echo "[build]"
 	@CGO_ENABLED=0 go build -a -installsuffix cgo -o $(BINARY_PATH)
