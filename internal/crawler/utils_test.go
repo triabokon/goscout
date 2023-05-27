@@ -104,8 +104,8 @@ func TestCrawlerUtils_IsTextURL(t *testing.T) {
 		expectedErrorMsg string
 	}{
 		{
-			name:             "valid url with text extension",
-			url:              "https://example.com/path/to/file.txt",
+			name:             "valid url with htm extension",
+			url:              "https://example.com/path/to/file.htm",
 			expectedResult:   true,
 			expectedErrorMsg: "",
 		},
@@ -149,9 +149,9 @@ func TestCrawlerUtils_FilterWebURLs(t *testing.T) {
 	}{
 		{
 			name:           "unique web urls",
-			urls:           []string{"https://example.com/someurl", "https://example.com/someurl1.txt"},
+			urls:           []string{"https://example.com/someurl", "https://example.com/someurl1.htm"},
 			seenURLs:       func(s *sync.Map, url string) {},
-			expectedResult: []string{"https://example.com/someurl", "https://example.com/someurl1.txt"},
+			expectedResult: []string{"https://example.com/someurl", "https://example.com/someurl1.htm"},
 		},
 		{
 			name:           "some static urls",
@@ -166,8 +166,8 @@ func TestCrawlerUtils_FilterWebURLs(t *testing.T) {
 			expectedResult: []string{"https://example.com/someurl"},
 		},
 		{
-			name: "seen text urls",
-			urls: []string{"https://example.com/file1.txt", "https://example.com/file2.txt"},
+			name: "seen html urls",
+			urls: []string{"https://example.com/file1.html", "https://example.com/file2.html"},
 			seenURLs: func(s *sync.Map, url string) {
 				s.Store(url, nil)
 			},

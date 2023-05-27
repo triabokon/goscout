@@ -19,6 +19,8 @@ const (
 	WebPageExtensionTypeErb  = ".erb"
 )
 
+const HTMLMimeType = "text/html"
+
 // unique removes duplicates.
 func unique(s []string) []string {
 	keys := make(map[string]bool, len(s))
@@ -48,7 +50,7 @@ func registerExtensionTypes() error {
 		WebPageExtensionTypeJsp, WebPageExtensionTypeErb,
 	}
 	for _, ext := range allTypes {
-		if err := mime.AddExtensionType(ext, "text/html"); err != nil {
+		if err := mime.AddExtensionType(ext, HTMLMimeType); err != nil {
 			return fmt.Errorf("failed to add extension type: %w", err)
 		}
 	}
@@ -68,7 +70,7 @@ func isTextURL(u string) (bool, error) {
 		return false, fmt.Errorf("failed to register extensions: %w", tErr)
 	}
 	mimeType := mime.TypeByExtension(extension)
-	return strings.HasPrefix(mimeType, "text/"), nil
+	return strings.HasPrefix(mimeType, HTMLMimeType), nil
 }
 
 // filterWebURLs filters visited web urls and urls that has wrong type.
